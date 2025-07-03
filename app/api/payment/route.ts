@@ -1,5 +1,7 @@
+import { pad, sortObject } from "@/utils/helpers";
 import { NextRequest, NextResponse } from "next/server";
 import qs from 'qs'
+import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
     const body = await req.json()
@@ -9,13 +11,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
     }
 
-    const vnp_TmnCode = process.env.VNP_TMN_CODE
-    const vnp_HashSecret = process.env.VNP_HASH_SECRET
+    const vnp_TmnCode = process.env.VNP_TMN_CODE as string | undefined
+    const vnp_HashSecret = process.env.VNP_HASH_SECRET as string | undefined
+
+    if (!vnp_TmnCode || !vnp_HashSecret) {
+        return NextResponse.json({ error: 'Missing VNPAY configuration' }, { status: 500 })
+    }
     const vnp_Url_Sandbox = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
     const vnp_ReturnUrl = 'http://localhost:3000/vnp/payment_return'
 
     const date = new Date()
-    // const createDate = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+    const createDate = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
     const orderId = Date.now().toString()
 
     let locale = body.language
@@ -23,10 +29,7 @@ export async function POST(req: NextRequest) {
         locale = 'vn'
     }
 
-    let ipAddr = req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress;
+    let ipAddr = req.headers.get('x-forwarded-for') || '';
 
     let vnp_Params: Record<string, string> = {
         vnp_Version: '1.0.0',

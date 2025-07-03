@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "crypto": "^1.0.1",
     "dotenv": "^17.0.1",
     "next": "15.3.4",
     "qs": "^6.14.0",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qs": "^6.14.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
