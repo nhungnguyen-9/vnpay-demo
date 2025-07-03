@@ -1,7 +1,8 @@
 import { pad, sortObject } from "@/utils/helpers";
 import { NextRequest, NextResponse } from "next/server";
-import qs from 'qs'
 import crypto from 'crypto'
+// @ts-ignore
+import qs from 'qs';
 
 export async function POST(req: NextRequest) {
     const body = await req.json()
