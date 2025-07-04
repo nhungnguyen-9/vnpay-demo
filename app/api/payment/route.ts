@@ -6,7 +6,10 @@ import qs from 'qs';
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const amount = body.amount;
-    let currency = (body.currency || 'VND').toUpperCase();
+    const currency = (body.currency || 'VND').toUpperCase();
+    const orderInfo = body.orderInfo || ''
+    const language = body.language || 'vn'
+    const bankCode = body.bankCode || ''
 
     if (!amount || isNaN(amount)) {
         return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
@@ -41,16 +44,20 @@ export async function POST(req: NextRequest) {
         vnp_Version: '1.0.0',
         vnp_Command: 'pay',
         vnp_TmnCode,
-        vnp_Locale: locale,
-        vnp_CurrCode: 'VND', // VNPay chỉ hỗ trợ VND ở sandbox, vẫn để VND
+        vnp_Locale: language,
+        vnp_CurrCode: 'VND',
         vnp_TxnRef: orderId,
-        vnp_OrderInfo: `Payment of order ${orderId} in ${currency}`,
+        vnp_OrderInfo: orderInfo || `Payment of order ${orderId} in ${currency}`,
         vnp_OrderType: 'other',
-        vnp_Amount: (finalAmount * 100).toString(), // x100 như yêu cầu của VNPay
+        vnp_Amount: (finalAmount * 100).toString(),
         vnp_ReturnUrl,
         vnp_IpAddr: ipAddr,
         vnp_CreateDate: createDate,
     };
+
+    if (bankCode) {
+        vnp_Params.vnp_BankCode = bankCode
+    }
 
     vnp_Params = sortObject(vnp_Params);
 
@@ -62,5 +69,5 @@ export async function POST(req: NextRequest) {
 
     const paymentUrl = `${vnp_Url_Sandbox}?${qs.stringify(vnp_Params, { encode: true })}`;
 
-    return NextResponse.json({ url: paymentUrl });
+    return NextResponse.json({ url: paymentUrl, txnRef: orderId });
 }
