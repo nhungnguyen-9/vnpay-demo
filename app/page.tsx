@@ -78,7 +78,7 @@ export default function Home() {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      {/* Header */}
+      {/* header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-blue-700">VNPay Payment Demo</h1>
         <div className="space-x-4">
@@ -99,7 +99,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* New Payment Tab */}
+      {/* new payment tab */}
       {tab === 'create' && (
         <section className="flex items-center justify-center">
           <div className="w-full max-w-md">
@@ -141,7 +141,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Transaction History Tab */}
+      {/* transaction history tab */}
       {tab === 'history' && (
         <section>
           <h2 className="text-xl font-semibold mb-4">Transaction History</h2>

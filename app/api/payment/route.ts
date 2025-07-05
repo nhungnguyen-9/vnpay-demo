@@ -6,17 +6,12 @@ import qs from 'qs';
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const amount = body.amount;
-    const currency = (body.currency || 'VND').toUpperCase();
-    const orderInfo = body.orderInfo || ''
-    const language = body.language || 'vn'
-    const bankCode = body.bankCode || ''
+    const orderInfo = body.orderInfo || '';
+    const language = body.language || 'vn';
+    const bankCode = body.bankCode || '';
 
     if (!amount || isNaN(amount)) {
         return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
-    }
-
-    if (currency !== 'VND' && currency !== 'USD') {
-        return NextResponse.json({ error: 'Unsupported currency' }, { status: 400 });
     }
 
     const vnp_TmnCode = process.env.VNP_TMN_CODE as string | undefined;
@@ -27,18 +22,12 @@ export async function POST(req: NextRequest) {
     }
 
     const vnp_Url_Sandbox = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    const vnp_ReturnUrl = 'http://localhost:3000/vnp/payment_return';
+    const vnp_ReturnUrl = process.env.VNP_RETURN_URL || 'http://localhost:3000/vnp/payment_return';
 
     const date = new Date();
     const createDate = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
     const orderId = Date.now().toString();
-
-    let locale = body.language || 'vn';
-    let ipAddr = req.headers.get('x-forwarded-for') || '127.0.0.1';
-
-    // Nếu là USD, quy đổi sang VND (giả định tỉ giá 1 USD = 24000 VND)
-    const exchangeRate = 24000;
-    const finalAmount = currency === 'USD' ? amount * exchangeRate : amount;
+    const ipAddr = req.headers.get('x-forwarded-for') || '127.0.0.1';
 
     let vnp_Params: Record<string, string> = {
         vnp_Version: '1.0.0',
@@ -47,16 +36,16 @@ export async function POST(req: NextRequest) {
         vnp_Locale: language,
         vnp_CurrCode: 'VND',
         vnp_TxnRef: orderId,
-        vnp_OrderInfo: orderInfo || `Payment of order ${orderId} in ${currency}`,
+        vnp_OrderInfo: orderInfo || `Payment of order ${orderId}`,
         vnp_OrderType: 'other',
-        vnp_Amount: (finalAmount * 100).toString(),
+        vnp_Amount: (amount * 100).toString(),
         vnp_ReturnUrl,
         vnp_IpAddr: ipAddr,
         vnp_CreateDate: createDate,
     };
 
     if (bankCode) {
-        vnp_Params.vnp_BankCode = bankCode
+        vnp_Params.vnp_BankCode = bankCode;
     }
 
     vnp_Params = sortObject(vnp_Params);
