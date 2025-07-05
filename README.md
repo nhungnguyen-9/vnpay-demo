@@ -5,7 +5,7 @@ It demonstrates backend integration with the **VNPay** payment gateway, simulati
 
 ---
 
-**Link production:** https://demo-vnpay-phi.vercel.app/
+**Production URL:** [https://demo-vnpay-phi.vercel.app](https://demo-vnpay-phi.vercel.app)
 
 ---
 
@@ -21,10 +21,10 @@ It demonstrates backend integration with the **VNPay** payment gateway, simulati
 ## Features
 
 - `/api/payment` POST API to generate VNPay payment links
-- Supports optional bank code and custom order info
-- Dynamic payment return page with result feedback
-- Payment history stored locally (in-browser)
-- Environment variable-based config (for both local and production)
+- Support for optional bank code, language, and custom order info
+- Dynamic return page showing payment result (success/fail)
+- Transaction history saved locally (using `localStorage`)
+- Configurable via environment variables
 
 ---
 
@@ -32,7 +32,7 @@ It demonstrates backend integration with the **VNPay** payment gateway, simulati
 
 ### `POST /api/payment`
 
-#### Request Body:
+#### Request Body
 
 ```json
 {
@@ -43,7 +43,7 @@ It demonstrates backend integration with the **VNPay** payment gateway, simulati
 }
 ```
 
-**Response:**
+#### Response
 
 ```json
 {
@@ -52,45 +52,52 @@ It demonstrates backend integration with the **VNPay** payment gateway, simulati
 }
 ```
 
+---
+
 ## Local Setup
 
-```json
+```bash
 git clone https://github.com/nhungnguyen-9/vnpay-demo.git
+cd vnpay-demo
 npm install
 cp .env.template .env.local
 # → Fill in your VNPay credentials
 npm run dev
 ```
 
-Then open: http://localhost:3000
+Then open: [http://localhost:3000](http://localhost:3000)
+
+---
 
 ## Environment Variables
 
-Create a .env.local file like this:
+Create a `.env.local` file like this:
 
-```json
+```env
 VNP_TMN_CODE=YOUR_VNP_TMNCODE
 VNP_HASH_SECRET=YOUR_VNP_SECRET
-VNP_RETURN_URL= YOUR_VNP_RETURN_URL
+VNP_RETURN_URL=http://localhost:3000/vnp/payment_return
 ```
 
-In production (Vercel), update VNP_RETURN_URL accordingly:
+In production (Vercel), update `VNP_RETURN_URL` like this:
 
-```json
+```env
 VNP_RETURN_URL=https://your-vercel-app.vercel.app/vnp/payment_return
 ```
 
+---
+
 ## Design Notes
 
-- VNPay only supports VND in sandbox → removed currency selection.
+- VNPay sandbox only supports **VND** → currency selection removed.
+- No database used → transactions stored in `localStorage`.
+- `vnp_SecureHash` is generated using **HMAC SHA512**.
+- Parameters are **sorted alphabetically** before signing, as required by VNPay.
+- The return page reads payment status using `useSearchParams()`.
 
-- No database used, instead demo stores history using localStorage.
+---
 
-- Crypto HMAC SHA512 is applied for vnp_SecureHash as required.
-
-- Parameters are sorted before signing, per VNPay API specs.
-
-- Return page uses useSearchParams() to read and display result.
+## Screenshots
 
 ![Payment Form](public/images/pic1.png)
 ![Payment](public/images/pic2.png)
