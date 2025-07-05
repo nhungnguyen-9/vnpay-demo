@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VNPay Payment Integration
 
-## Getting Started
+This project is built with **Next.js** to fulfill the Backend Developer take-home assignment for **Aiicul**.  
+It demonstrates backend integration with the **VNPay** payment gateway, simulating a payment flow with sandbox credentials.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Link production:** https://demo-vnpay-phi.vercel.app/
+
+---
+
+## Tech Stack
+
+- **Next.js** (App Router, TypeScript)
+- **Tailwind CSS** (for UI styling)
+- **VNPay Sandbox API**
+- **LocalStorage** (to simulate transaction history)
+
+---
+
+## Features
+
+- `/api/payment` POST API to generate VNPay payment links
+- Supports optional bank code and custom order info
+- Dynamic payment return page with result feedback
+- Payment history stored locally (in-browser)
+- Environment variable-based config (for both local and production)
+
+---
+
+## API Specification
+
+### `POST /api/payment`
+
+#### Request Body:
+
+```json
+{
+  "amount": 100000,
+  "orderInfo": "Test payment",
+  "language": "vn",
+  "bankCode": "NCB"
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Response:**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```json
+{
+  "url": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?...",
+  "txnRef": "1751622521357"
+}
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local Setup
 
-## Learn More
+```json
+git clone https://github.com/nhungnguyen-9/vnpay-demo.git
+npm install
+cp .env.template .env.local
+# → Fill in your VNPay credentials
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then open: http://localhost:3000
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a .env.local file like this:
 
-## Deploy on Vercel
+```json
+VNP_TMN_CODE=YOUR_VNP_TMNCODE
+VNP_HASH_SECRET=YOUR_VNP_SECRET
+VNP_RETURN_URL= YOUR_VNP_RETURN_URL
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+In production (Vercel), update VNP_RETURN_URL accordingly:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+VNP_RETURN_URL=https://your-vercel-app.vercel.app/vnp/payment_return
+```
+
+## Design Notes
+
+- VNPay only supports VND in sandbox → removed currency selection.
+
+- No database used, instead demo stores history using localStorage.
+
+- Crypto HMAC SHA512 is applied for vnp_SecureHash as required.
+
+- Parameters are sorted before signing, per VNPay API specs.
+
+- Return page uses useSearchParams() to read and display result.
+
+![Payment Form](public/images/pic1.png)
+![Payment](public/images/pic2.png)
+![Return URL](public/images/pic3.png)
+![Transaction History](public/images/pic4.png)
